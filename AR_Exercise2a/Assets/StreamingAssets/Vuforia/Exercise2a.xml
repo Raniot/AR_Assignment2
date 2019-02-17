@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<QCARConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="qcar_config.xsd">
+  <Tracking>
+    <ImageTarget name="beer" size="19.000000 23.898954" />
+    <ImageTarget name="terrain_base" size="19.500000 19.448818" />
+    <ImageTarget name="terrain_controller" size="19.600000 19.485044" />
+  </Tracking>
+</QCARConfig>

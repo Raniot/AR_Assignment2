@@ -1,57 +1,76 @@
-﻿using System.Linq;
-using UnityEngine;
+﻿using UnityEngine;
+using Vuforia;
 
 public class Generate : MonoBehaviour
 {
-    public int m_SegmentCount = 100;
-    public Texture2D m_HeightMap;
+    public Material Material;
+    public Texture2D HeightMap;
+    public float SegmentSize = 0.01f;
+    public float scale;
 
-    private float m_Height;
-    private float m_Width;
+    private float mHeight;
+    private float mWidth;
 
-    private bool m_TextureIsReadable = false;
-    private bool m_TextureChecked = false;
+    private Transform targetBase;
+    private Transform targetController;
+    private ImageTargetBehaviour targetBaseBehaviour;
+    private ImageTargetBehaviour targetControllerBehaviour;
+    private bool mTextureIsReadable;
+    private bool mTextureChecked;
 
     // Start is called before the first frame update
     void Start()
     {
+        targetBase = transform.parent;
+        targetController = transform.parent.parent.Find("TerrainControllerImageTarget");
+
+        targetBaseBehaviour = targetBase.GetComponent<ImageTargetBehaviour>();
+        targetControllerBehaviour = targetController.GetComponent<ImageTargetBehaviour>();
+
+        GetComponent<Renderer>().material = Material;
     }
 
     // Update is called once per frame
     void Update()
     {
-        m_Width = transform.parent.parent.Find("TerrainControllerImageTarget").position.x;
-        m_Height = transform.parent.parent.Find("TerrainControllerImageTarget").position.z;
+        var conPos = targetController.position;
+        conPos.y = 0f;
+        if (targetBaseBehaviour.CurrentStatus != TrackableBehaviour.Status.TRACKED || 
+            targetControllerBehaviour.CurrentStatus != TrackableBehaviour.Status.TRACKED) return;
 
-        Mesh mesh = new Mesh();
+        var meshBuilder = new MeshBuilder();
 
-        float segmentSize = m_Width / m_SegmentCount;
+        mWidth = targetController.position.x;
+        mHeight = targetController.position.z;
 
-        //Matrix4x4 meshTransform = transform.localToWorldMatrix;
+        float mSegmentWidthCount = mWidth / (SegmentSize * transform.lossyScale.x);
+        float mSegmentHeightCount = mHeight / (SegmentSize * transform.lossyScale.z);
 
-        for (int i = 0; i <= m_SegmentCount; i++)
+        for (int i = 0; i <= mSegmentHeightCount; i++)
         {
-            float z = segmentSize * i;
-            float v = (1.0f / m_SegmentCount) * i;
+            float z = SegmentSize * i;
+            float v = (1.0f / mSegmentHeightCount) * i;
 
-            for (int j = 0; j <= m_SegmentCount; j++)
+            for (int j = 0; j <= mSegmentWidthCount; j++)
             {
-                float x = segmentSize * j;
-                float u = (1.0f / m_SegmentCount) * j;
+                float x = SegmentSize * j;
+                float u = (1.0f / mSegmentWidthCount) * j;
 
-                Vector3 offset = new Vector3(x, GetY(x, z), z);
+                Vector3 offset = new Vector3(x, GetY(x,z), z);
 
                 Vector2 uv = new Vector2(u, v);
                 bool buildTriangles = i > 0 && j > 0;
 
-                BuildQuadForGrid(mesh, offset, uv, buildTriangles, m_SegmentCount + 1);
+                BuildQuadForGrid(meshBuilder, offset, uv, buildTriangles, (int)mSegmentWidthCount + 1);
             }
         }
+
+        Mesh mesh = meshBuilder.CreateMesh();
 
         mesh.RecalculateNormals();
 
         //Look for a MeshFilter component attached to this GameObject:
-        MeshFilter filter = GetComponent<MeshFilter>();
+        MeshFilter filter = transform.GetComponent<MeshFilter>();
 
         //If the MeshFilter exists, attach the new mesh to it.
         //Assuming the GameObject also has a renderer attached, our new mesh will now be visible in the scene.
@@ -61,55 +80,53 @@ public class Generate : MonoBehaviour
         }
     }
 
-    public float GetY(float x, float z)
+    private void BuildQuadForGrid(MeshBuilder meshBuilder, Vector3 position, Vector2 uv, 
+                    bool buildTriangles, int vertsPerRow)
     {
-        if (IsTextureReadable(m_HeightMap))
-        {
-            var mapColor = m_HeightMap.GetPixelBilinear(x / m_Width, z / m_Width);
-
-            return mapColor.grayscale * m_Height;
-        }
-
-        return 0.0f;
-    }
-
-    private void BuildQuadForGrid(Mesh meshBuilder, Vector3 position, Vector2 uv, bool buildTriangles, int vertsPerRow)
-    {
-        meshBuilder.vertices.ToList().Add(position);
-        meshBuilder.uv.ToList().Add(uv);
+        meshBuilder.Vertices.Add(position);
+        meshBuilder.UVs.Add(uv);
 
         if (buildTriangles)
         {
-            int baseIndex = meshBuilder.vertices.Length - 1;
+            int baseIndex = meshBuilder.Vertices.Count - 1;
 
             int index0 = baseIndex;
             int index1 = baseIndex - 1;
             int index2 = baseIndex - vertsPerRow;
             int index3 = baseIndex - vertsPerRow - 1;
 
-            meshBuilder.triangles.ToList().Add(index0);
-            meshBuilder.triangles.ToList().Add(index2);
-            meshBuilder.triangles.ToList().Add(index1);
-
-            meshBuilder.triangles.ToList().Add(index2);
-            meshBuilder.triangles.ToList().Add(index3);
-            meshBuilder.triangles.ToList().Add(index1);
+            meshBuilder.AddTriangle(index0, index2, index1);
+            meshBuilder.AddTriangle(index2, index3, index1);
         }
+    }
+
+    public float GetY(float x, float z)
+    {
+        var yaw = targetController.eulerAngles.y;
+
+        if (IsTextureReadable(HeightMap))
+        {
+            Color mapColor = HeightMap.GetPixelBilinear(x, z);
+
+            return (mapColor.grayscale / scale) * (yaw / 360);
+        }
+
+        return 0.0f;
     }
 
     private bool IsTextureReadable(Texture2D texture)
     {
-        if (m_TextureChecked)
-            return m_TextureIsReadable;
+        if (mTextureChecked)
+            return mTextureIsReadable;
 
         if (texture != null)
         {
-            m_TextureChecked = true;
+            mTextureChecked = true;
 
             try
             {
                 texture.GetPixel(0, 0);
-                m_TextureIsReadable = true;
+                mTextureIsReadable = true;
                 return true;
             }
             catch

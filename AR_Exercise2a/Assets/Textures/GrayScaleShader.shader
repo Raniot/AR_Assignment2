@@ -36,16 +36,15 @@ Shader "Custom/GrayScaleShader"
 		 half4 frag (v2f i) : COLOR
 		 {
 			half2 uv = i.uv;
-            half noiseVal = tex2D(_NoiseTex, uv).r;
-			// Noise
-            uv.x = uv.x + noiseVal * _Time.x;
-            uv.y = uv.y + noiseVal * _Time.y;
-            
 
+			// Noise
+            half4 noisecol = tex2D(_NoiseTex, uv + 100* _Time.x*_Time.x * _Time.y*_Time.y);
 			half4 texcol = tex2D(_MainTex, uv);
+			half4 texWithNoisecol = lerp(noisecol, texcol, 0.98);
+
 			//Gray Scale
-			texcol.rgb = dot(texcol.rgb, float3(0.3, 0.59, 0.11));
-			return texcol;
+			texWithNoisecol.rgb = dot(texWithNoisecol.rgb, float3(0.3, 0.59, 0.11));
+			return texWithNoisecol;
 		 }
 		 ENDCG
 		}

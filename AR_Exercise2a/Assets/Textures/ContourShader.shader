@@ -4,7 +4,7 @@ Shader "Custom/ContourShader"
 {
 	Properties {
 		_OutlineColor ("Outline Color", Color) = (0,0,0,1)
-		_Outline ("Outline width", Range (0.0, 0.10)) = .1
+		_Outline ("Outline width", Range (0.0, 0.30)) = .3
 		_MainTex ("Texture", 2D) = "white" { }
 		_NoiseTex ("Noise texture", 2D) = "grey" {}
 	}
@@ -44,33 +44,33 @@ v2f vert(appdata_base v) {
 ENDCG
  
 	SubShader {
-		Tags { "Queue" = "Transparent" }
+		//Tags { "Queue" = "Transparent" }
  
 		Pass {
 			Material {
 					Diffuse (0,1,1,1)
 			}
-			Cull Back
+			//Cull Back
 		}
  
 		Pass {
 			Name "OUTLINE"
-			Tags { "LightMode" = "Always" }
+			//Tags { "LightMode" = "Always" }
 			Cull Front
  
-			Blend One OneMinusDstColor // Soft Additive
+			Blend One OneMinusDstColor
  
 		CGPROGRAM
 		#pragma vertex vert
 		#pragma fragment frag
 
-		half4 frag(v2f i) :COLOR {
-
+		half4 frag(v2f i) : COLOR {
+			
 			half2 uv = i.uv;
 			half4 noisecol = tex2D(_NoiseTex, uv + 100* _Time.x*_Time.x * _Time.y*_Time.y);
 			half4 texcol = tex2D(_MainTex, uv);
 			half4 texWithNoisecol = lerp(noisecol, texcol, 0.98);
-			return i.color;
+			return i.color + noisecol;
 		}
 		ENDCG
 		}

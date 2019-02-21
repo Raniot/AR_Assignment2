@@ -53,7 +53,7 @@ Shader "Custom/ContourShader"
 		half4 noisecol = tex2D(_NoiseTex, i.uv + 100* _Time.x*_Time.x * _Time.y*_Time.y);
 		half4 texWithNoisecol = lerp(noisecol, _ContourTex, 0.90);
 
-		return texWithNoisecol;
+		return _ContourTex;
     }
 
     ENDCG

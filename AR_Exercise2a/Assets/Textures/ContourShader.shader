@@ -51,7 +51,7 @@ Shader "Custom/ContourShader"
         fixed4 _ContourTex = fixed4(lerp(fill, _LineColor.rgb, edge * _LineColor.a), 1);
 
 		half4 noisecol = tex2D(_NoiseTex, i.uv + 100* _Time.x*_Time.x * _Time.y*_Time.y);
-		half4 texWithNoisecol = lerp(noisecol, _ContourTex, 0.90);
+		half4 texWithNoisecol = lerp(noisecol, _ContourTex, 0.95);
 
 		return texWithNoisecol;
     }
@@ -60,7 +60,9 @@ Shader "Custom/ContourShader"
 
     SubShader
     {
-        Cull Off ZWrite Off ZTest Always
+        Cull Off 
+		ZWrite Off 
+		ZTest Always
         Pass
         {
             CGPROGRAM

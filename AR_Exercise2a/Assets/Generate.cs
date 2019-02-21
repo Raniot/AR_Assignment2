@@ -106,6 +106,7 @@ public class Generate : MonoBehaviour
 
         if (IsTextureReadable(HeightMap))
         {
+            // Read height map
             Color mapColor = HeightMap.GetPixelBilinear(x, z);
 
             return (mapColor.grayscale / scale) * (yaw / 360);

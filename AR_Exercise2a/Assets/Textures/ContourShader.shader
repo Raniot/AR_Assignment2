@@ -42,14 +42,19 @@ Shader "Custom/ContourShader"
 
         return saturate((g - _Threshold.x) * _Threshold.y);
     }
-
+	// Fagment shader, takes care of the pixels between the verticies
     fixed4 frag(v2f_img i) : SV_Target
     {
+		// Edge detection with RobertsCross
         fixed edge = RobertsCross(_CameraGBufferTexture2, i.uv);
+		// Find areas to fill in this case two areas
         fixed luma = dot(tex2D(_MainTex, i.uv).rgb, 1.0 / 2);
+		// Fill areas
         fixed3 fill = luma > 0.50 ? _FillColor1 : _FillColor2;
+		// Create Texture
         fixed4 _ContourTex = fixed4(lerp(fill, _LineColor.rgb, edge * _LineColor.a), 1);
 
+		// Add noise texture
 		half4 noisecol = tex2D(_NoiseTex, i.uv + 100* _Time.x*_Time.x * _Time.y*_Time.y);
 		half4 texWithNoisecol = lerp(noisecol, _ContourTex, 0.95);
 
@@ -60,9 +65,9 @@ Shader "Custom/ContourShader"
 
     SubShader
     {
-        Cull Off 
-		ZWrite Off 
-		ZTest Always
+        Cull Off //Disables culling - all faces are drawn
+		ZWrite Off // Pixels are not written to the depth buffer
+		ZTest Always // Depth testing should always be performed
         Pass
         {
             CGPROGRAM

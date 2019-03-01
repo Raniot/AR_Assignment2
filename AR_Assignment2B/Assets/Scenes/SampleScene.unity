@@ -812,7 +812,6 @@ GameObject:
   - component: {fileID: 1267475588}
   - component: {fileID: 1267475589}
   - component: {fileID: 1267475590}
-  - component: {fileID: 1267475591}
   m_Layer: 0
   m_Name: ARCamera
   m_TagString: Untagged
@@ -964,28 +963,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: daa27d89b3e27c841b7ab14a563fc54f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1267475591
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1267475582}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4a1f5b98cab2dcf4aa94c18c08e1b13f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cam: {fileID: 1267475586}
-  corner1: {fileID: 381691827}
-  corner2: {fileID: 1692075237}
-  corner3: {fileID: 1289498657}
-  corner4: {fileID: 481388423}
-  projectionObject: {fileID: 498747782}
-  fx: 650
-  fy: 650
-  cx: 320
-  cy: 240
 --- !u!1 &1289498657
 GameObject:
   m_ObjectHideFlags: 0

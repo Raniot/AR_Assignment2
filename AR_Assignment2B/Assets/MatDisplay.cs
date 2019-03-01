@@ -314,6 +314,7 @@ public class MatDisplay : MonoBehaviour
         Core.flip(uMat, flipMat, 0);
         //uMat = flipMat;
         TextureFormat format = ChannelsToFormat(uMat.channels());
+        Debug.Log(targetTexture.mipmapCount);
         if (targetTexture != null && (targetTexture.width != uMat.width() || targetTexture.height != uMat.height() || targetTexture.format != format || targetTexture.mipmapCount > 1))
         {
             Debug.LogWarning("Invalid texture given. Pass uninitialized or valid texture. Deleting and recreating texture.");

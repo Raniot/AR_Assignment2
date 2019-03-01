@@ -20,7 +20,7 @@ public class Projection : MonoBehaviour
         
     }
 
-    static Matrix4x4 PerspectiveOffCenter(float near, float far)
+    public static Matrix4x4 PerspectiveOffCenter(float near, float far)
     {
         //Intrinsic values (from AR-Toolkit see onenote)
         var fx = 842.34573f;

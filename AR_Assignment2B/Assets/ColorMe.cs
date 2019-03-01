@@ -21,15 +21,15 @@ public class ColorMe : MonoBehaviour
     public int ImageTargetHeight = 601;
 
     //Default values: guessed, not calibrated
-    //public float fx = 650;
-    //public float fy = 650;
-    //public float cx = 320;
-    //public float cy = 240;
+    public float Fx = 650;
+    public float Fy = 650;
+    public float Cx = 320;
+    public float Cy = 240;
 
-    public float Fx = 842.34573f;
-    public float Fy = 842.03391f;
-    public float Cx = 310.45239f;
-    public float Cy = 243.37875f;
+    //public float Fx = 842.34573f;
+    //public float Fy = 842.03391f;
+    //public float Cx = 310.45239f;
+    //public float Cy = 243.37875f;
 
     private MatOfPoint2f _imagePoints;
     private Mat _camImageMat;

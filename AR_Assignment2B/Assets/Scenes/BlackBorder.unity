@@ -884,12 +884,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Cam: {fileID: 133853410}
   ObjectToColor: {fileID: 2033636737}
-  ImageTargetWidth: 1024
-  ImageTargetHeight: 1024
-  Fx: 650
-  Fy: 650
-  Cx: 320
-  Cy: 240
+  RgbaTexturePath: Models\flying_skull_tex.png
 --- !u!1 &1775699642
 GameObject:
   m_ObjectHideFlags: 0

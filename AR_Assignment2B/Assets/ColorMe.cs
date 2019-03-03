@@ -120,16 +120,16 @@ public class ColorMe : MonoBehaviour
                 new Point(ImageTargetWidth, 0),
                 new Point(0, 0),
             };
-            //var H = CalcHomogrphy(srcPoints, dstPoints);
+            var H2 = CalcHomography(srcPoints, dstPoints);
 
             var matObj = new MatOfPoint2f(srcPoints.ToArray());
             var matDst = new MatOfPoint2f(dstPoints.ToArray());
             var H = Calib3d.findHomography(matObj, matDst);
-            //Debug.Log("MatH2: " + H2.dump());
+            Debug.Log("MatH2: " + H.dump());
 
             var warpedMat = new Mat(new Size(ImageTargetWidth, ImageTargetHeight), _camImageMat.type());
 
-            Imgproc.warpPerspective(_camImageMat, warpedMat, H, new Size(ImageTargetWidth, ImageTargetHeight),
+            Imgproc.warpPerspective(_camImageMat, warpedMat, H2, new Size(ImageTargetWidth, ImageTargetHeight),
                 Imgproc.INTER_LINEAR);
             warpedMat.convertTo(warpedMat, CvType.CV_8UC3);
 
@@ -146,7 +146,7 @@ public class ColorMe : MonoBehaviour
         Cam.projectionMatrix = Projection.PerspectiveOffCenter(Cam.nearClipPlane, Cam.farClipPlane);
     }
 
-    private static Mat CalcHomogrphy(List<Point> srcPoints, List<Point> dstPoints)
+    private static Mat CalcHomography(List<Point> srcPoints, List<Point> dstPoints)
     {
         var xy1 = srcPoints[0];
         var xy2 = srcPoints[1];
@@ -158,16 +158,16 @@ public class ColorMe : MonoBehaviour
 
         var matA = new Mat(8, 8, CvType.CV_64FC1);
         matA.put(0, 0,
-            xy1.x*xy1.y, 1, 0, 0, 0, -uvs[0].U*xy1.x, -uvs[0].U*xy1.y,
+            xy1.x, xy1.y, 1, 0, 0, 0, -uvs[0].U*xy1.x, -uvs[0].U*xy1.y,
             0, 0, 0, xy1.x, xy1.y, 1, -uvs[0].V*xy1.x, -uvs[0].V*xy1.y,
 
-            xy2.x * xy2.y, 1, 0, 0, 0, -uvs[1].U * xy2.x, -uvs[1].U * xy2.y,
+            xy2.x, xy2.y, 1, 0, 0, 0, -uvs[1].U * xy2.x, -uvs[1].U * xy2.y,
             0, 0, 0, xy2.x, xy2.y, 1, -uvs[1].V * xy2.x, -uvs[1].V * xy2.y,
 
-            xy3.x * xy3.y, 1, 0, 0, 0, -uvs[2].U * xy3.x, -uvs[2].U * xy3.y,
+            xy3.x, xy3.y, 1, 0, 0, 0, -uvs[2].U * xy3.x, -uvs[2].U * xy3.y,
             0, 0, 0, xy3.x, xy3.y, 1, -uvs[2].V * xy3.x, -uvs[2].V * xy3.y,
 
-            xy4.x * xy4.y, 1, 0, 0, 0, -uvs[3].U * xy4.x, -uvs[3].U * xy4.y,
+            xy4.x, xy4.y, 1, 0, 0, 0, -uvs[3].U * xy4.x, -uvs[3].U * xy4.y,
             0, 0, 0, xy4.x, xy4.y, 1, -uvs[3].V * xy4.x, -uvs[3].V * xy4.y);
         Debug.Log("MatA: " + matA.dump());
 
@@ -178,8 +178,8 @@ public class ColorMe : MonoBehaviour
 
         Debug.Log("MatB: " + b.dump());
 
-        var H = new Mat();
-        var test = Core.solve(matA, b, H);
+        var H = new Mat(3, 3, CvType.CV_64FC1);
+        Core.solve(matA, b, H);
 
         var H00 = H.get(0,0).First();
         var H01 = H.get(1, 0).First();

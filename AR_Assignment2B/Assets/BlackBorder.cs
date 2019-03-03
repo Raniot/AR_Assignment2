@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using OpenCVForUnity.Calib3dModule;
 using OpenCVForUnity.CoreModule;
 using OpenCVForUnity.ImgprocModule;
-using OpenCVForUnity.UtilsModule;
 using UnityEngine;
 using Vuforia;
 using Vector3 = UnityEngine.Vector3;
@@ -13,13 +11,7 @@ public class BlackBorder : MonoBehaviour
 {
 
     public Camera Cam;
-
-    public GameObject Corner1;
-    public GameObject Corner2;
-    public GameObject Corner3;
-    public GameObject Corner4;
     public GameObject ObjectToColor;
-
 
     public int ImageTargetWidth = 1122;
     public int ImageTargetHeight = 601;
@@ -63,7 +55,7 @@ public class BlackBorder : MonoBehaviour
         var blackWhiteMat = new Mat();
         Imgproc.cvtColor(_camImageMat, blackWhiteMat, Imgproc.COLOR_BGR2GRAY);
 
-        Imgproc.threshold(blackWhiteMat, blackWhiteMat, 128, 255, Imgproc.THRESH_BINARY);
+        Imgproc.threshold(blackWhiteMat, blackWhiteMat, 50, 255, Imgproc.THRESH_BINARY);
         var list = new List<MatOfPoint>();
 
         Imgproc.findContours(blackWhiteMat, list, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
@@ -73,7 +65,7 @@ public class BlackBorder : MonoBehaviour
         {
             counter++;
             var mat = new MatOfPoint2f();
-            Imgproc.approxPolyDP(new MatOfPoint2f(x.toArray()), mat, 7, true);
+            Imgproc.approxPolyDP(new MatOfPoint2f(x.toArray()), mat, 5, true);
             newList.Add(mat);
             //Imgproc.drawContours(_camImageMat, list, counter, new Scalar(0, 255, 0, 0.8), 1);
 
@@ -97,99 +89,73 @@ public class BlackBorder : MonoBehaviour
             x.convertTo(matofpoint, CvType.CV_32S);
             var listmatofpoint = new List<MatOfPoint> { matofpoint };
 
-            Imgproc.drawContours(_camImageMat, listmatofpoint, 0, new Scalar(0, 255, 0, 0.8), 5);
+            Imgproc.drawContours(_camImageMat, listmatofpoint, 0, new Scalar(255, 0, 255, 0.8), 5);
         }
 
-        //Vector3 worldPnt1 = Corner1.transform.position;
-        //Vector3 worldPnt2 = Corner2.transform.position;
-        //Vector3 worldPnt3 = Corner3.transform.position;
-        //Vector3 worldPnt4 = Corner4.transform.position;
+        if (!candidates.Any())
+        {
+            MatDisplay.DisplayMat(_camImageMat, MatDisplaySettings.FULL_BACKGROUND);
+            Cam.projectionMatrix = Projection.PerspectiveOffCenter(Cam.nearClipPlane, Cam.farClipPlane);
+            return;
+        }
 
-        ////See lecture slides
-        //Matrix4x4 Rt = Cam.transform.worldToLocalMatrix;
-        //Matrix4x4 A = Matrix4x4.identity;
-        //A.m00 = Fx;
-        //A.m11 = Fy;
-        //A.m02 = Cx;
-        //A.m12 = Cy;
+        var srcPoints = new List<Point>
+        {
+            candidates[0].toArray()[1], candidates[0].toArray()[0], candidates[0].toArray()[3],
+            candidates[0].toArray()[2]
+        };
+        var dstPoints = new List<Point>
+        {
+            new Point(0, ImageTargetHeight),
+            new Point(ImageTargetWidth, ImageTargetHeight),
+            new Point(ImageTargetWidth, 0),
+            new Point(0, 0),
+        };
 
-        ////See equation for pinhole camera model
-        //Matrix4x4 worldToImage = A * Rt;
+        if (Input.GetKey(KeyCode.Space))
+        {
+            var texMat = MatDisplay.LoadRGBATexture(@"Models\flying_skull_tex.png");
 
-        ////Apply transform to get homogeneous image coordinates
-        //Vector3 hUV1 = worldToImage.MultiplyPoint3x4(worldPnt1);
-        //Vector3 hUV2 = worldToImage.MultiplyPoint3x4(worldPnt2);
-        //Vector3 hUV3 = worldToImage.MultiplyPoint3x4(worldPnt3);
-        //Vector3 hUV4 = worldToImage.MultiplyPoint3x4(worldPnt4);
+            var matObj = new MatOfPoint2f(srcPoints.ToArray());
+            var matDst = new MatOfPoint2f(dstPoints.ToArray());
+            var H = Calib3d.findHomography(matObj, matDst);
 
-        ////hUV are the image coordinates in homogeneous coordinates, we need to normalize, i.e., divide by Z to get to Cartesian coordinates
-        //Vector2 uv1 = new Vector2(hUV1.x, hUV1.y) / hUV1.z;
-        //Vector2 uv2 = new Vector2(hUV2.x, hUV2.y) / hUV2.z;
-        //Vector2 uv3 = new Vector2(hUV3.x, hUV3.y) / hUV3.z;
-        //Vector2 uv4 = new Vector2(hUV4.x, hUV4.y) / hUV4.z;
+            var warpedMat = new Mat();
 
-        ////Do not forget to alloc before putting values into a MatOfPoint2f (see Start() above)
-        ////We need to flip the v-coordinates, see coordinate system overview
-        //float maxV = camImg.Height - 1;
-        //_imagePoints.put(0, 0, uv1.x, maxV - uv1.y);
-        //_imagePoints.put(1, 0, uv2.x, maxV - uv2.y);
-        //_imagePoints.put(2, 0, uv3.x, maxV - uv3.y);
-        //_imagePoints.put(3, 0, uv4.x, maxV - uv4.y);
+            Imgproc.warpPerspective(texMat, warpedMat, H.inv(), _camImageMat.size(),
+                Imgproc.INTER_LINEAR);
+            warpedMat.convertTo(warpedMat, _camImageMat.type());
 
-        ////Debug draw points using OpenCV's drawing functions
-        //Point imgPnt1 = new Point(_imagePoints.get(0, 0));
-        //Point imgPnt2 = new Point(_imagePoints.get(1, 0));
-        //Point imgPnt3 = new Point(_imagePoints.get(2, 0));
-        //Point imgPnt4 = new Point(_imagePoints.get(3, 0));
-        //Imgproc.circle(_camImageMat, imgPnt1, 5, new Scalar(255, 0, 0, 255));
-        //Imgproc.circle(_camImageMat, imgPnt2, 5, new Scalar(0, 255, 0, 255));
-        //Imgproc.circle(_camImageMat, imgPnt3, 5, new Scalar(0, 0, 255, 255));
-        //Imgproc.circle(_camImageMat, imgPnt4, 5, new Scalar(255, 255, 0, 255));
-        //Scalar lineCl = new Scalar(200, 120, 0, 160);
-        //Imgproc.line(_camImageMat, imgPnt1, imgPnt2, lineCl);
-        //Imgproc.line(_camImageMat, imgPnt2, imgPnt3, lineCl);
-        //Imgproc.line(_camImageMat, imgPnt3, imgPnt4, lineCl);
-        //Imgproc.line(_camImageMat, imgPnt4, imgPnt1, lineCl);
+            var blendTex = new Mat();
 
-        //if (Input.GetKey(KeyCode.Space))
-        //{
-        //    var texMat = MatDisplay.LoadRGBATexture(@"Models\flying_skull_tex.png");
+            Core.addWeighted(_camImageMat, 0.95f, warpedMat, 0.4f, 0.0, blendTex);
 
-        //    var srcPoints = new List<Point> { imgPnt2, imgPnt1, imgPnt4, imgPnt3 };
-        //    var dstPoints = new List<Point>
-        //    {
-        //        new Point(0, ImageTargetHeight),
-        //        new Point(ImageTargetWidth, ImageTargetHeight),
-        //        new Point(ImageTargetWidth, 0),
-        //        new Point(0, 0),
-        //    };
+            MatDisplay.DisplayMat(blendTex, MatDisplaySettings.FULL_BACKGROUND);
+        }
+        if (Input.GetKey(KeyCode.LeftControl))
+        {
+            var matObj = new MatOfPoint2f(srcPoints.ToArray());
+            var matDst = new MatOfPoint2f(dstPoints.ToArray());
+            var H = Calib3d.findHomography(matObj, matDst);
 
-        //    var matObj = new MatOfPoint2f(srcPoints.ToArray());
-        //    var matDst = new MatOfPoint2f(dstPoints.ToArray());
-        //    var H = Calib3d.findHomography(matObj, matDst);
+            var warpedMat = new Mat(new Size(ImageTargetWidth, ImageTargetHeight), _camImageMat.type());
 
-        //    var warpedMat = new Mat();
+            Imgproc.warpPerspective(_camImageMat, warpedMat, H, new Size(ImageTargetWidth, ImageTargetHeight),
+                Imgproc.INTER_LINEAR);
+            warpedMat.convertTo(warpedMat, CvType.CV_8UC3);
 
-        //    Imgproc.warpPerspective(texMat, warpedMat, H.inv(), _camImageMat.size(),
-        //        Imgproc.INTER_LINEAR);
-        //    warpedMat.convertTo(warpedMat, _camImageMat.type());
+            var newTexture = new Texture2D(ImageTargetWidth, ImageTargetHeight, mipChain: false, textureFormat: TextureFormat.RGBA32);
+            MatDisplay.MatToTexture(warpedMat, ref newTexture);
 
-        //    var blendTex = new Mat();
+            ObjectToColor.GetComponent<MeshRenderer>().material.mainTexture = newTexture;
+        }
+        else
+        {
+            //Display the Mat that includes video feed and debug points
+            MatDisplay.DisplayMat(_camImageMat, MatDisplaySettings.FULL_BACKGROUND);
+        }
 
-        //    Core.addWeighted(_camImageMat, 0.95f, warpedMat, 0.4f, 0.0, blendTex);
-
-        //    MatDisplay.DisplayMat(blendTex, MatDisplaySettings.FULL_BACKGROUND);
-        //}
-        //else
-        //{
-        //    //Display the Mat that includes video feed and debug points
-        //    MatDisplay.DisplayMat(_camImageMat, MatDisplaySettings.FULL_BACKGROUND);
-        //}
-
-        ////---- MATCH INTRINSICS OF REAL CAMERA AND PROJECTION MATRIX OF VIRTUAL CAMERA ----
-        //Cam.projectionMatrix = Projection.PerspectiveOffCenter(Cam.nearClipPlane, Cam.farClipPlane);
-        var test = candidates;
-        MatDisplay.DisplayMat(_camImageMat, MatDisplaySettings.FULL_BACKGROUND);
+        //---- MATCH INTRINSICS OF REAL CAMERA AND PROJECTION MATRIX OF VIRTUAL CAMERA ----
         Cam.projectionMatrix = Projection.PerspectiveOffCenter(Cam.nearClipPlane, Cam.farClipPlane);
     }
 }

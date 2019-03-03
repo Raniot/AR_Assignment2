@@ -297,7 +297,7 @@ Mesh:
     vertexCount: 4
     localAABB:
       m_Center: {x: 0, y: 0, z: 0}
-      m_Extent: {x: 0.5, y: 0, z: 0.49779296}
+      m_Extent: {x: 0.5, y: 0, z: 0.5}
   m_Shapes:
     vertices: []
     shapes: []
@@ -373,7 +373,7 @@ Mesh:
       format: 0
       dimension: 0
     m_DataSize: 128
-    _typelessdata: 000000bf00000000b8defebe000000000000803f000000000000000000000000000000bf00000000b8defe3e000000000000803f00000000000000000000803f0000003f00000000b8defebe000000000000803f000000000000803f000000000000003f00000000b8defe3e000000000000803f000000000000803f0000803f
+    _typelessdata: 000000bf00000000000000bf000000000000803f000000000000000000000000000000bf000000000000003f000000000000803f00000000000000000000803f0000003f00000000000000bf000000000000803f000000000000803f000000000000003f000000000000003f000000000000803f000000000000803f0000803f
   m_CompressedMesh:
     m_Vertices:
       m_NumItems: 0
@@ -628,7 +628,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: 'Black_border_squareMaterial
+  m_Name: 'unwrapped_skullMaterial
 
     -18478'
   m_Shader: {fileID: 10752, guid: 0000000000000000f000000000000000, type: 0}
@@ -643,7 +643,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 886d12f41a2c437f8a0cba117a563524, type: 3}
+        m_Texture: {fileID: 2800000, guid: df9dcc5d945b4c44bb0a6fbaab2c2639, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats: []
@@ -843,14 +843,14 @@ MonoBehaviour:
   m_Script: {fileID: -1631628248, guid: bab6fa851cf5a1a4bba3cec5f191cb8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mTrackableName: Black_border_square
+  mTrackableName: unwrapped_skull
   mPreserveChildSize: 0
   mInitializedInEditor: 1
   mDataSetPath: Vuforia/Exercise2b.xml
-  mAspectRatio: 0.9955859
+  mAspectRatio: 1
   mImageTargetType: 0
-  mWidth: 20.2
-  mHeight: 20.110836
+  mWidth: 19.4
+  mHeight: 19.4
 --- !u!4 &1494452627
 Transform:
   m_ObjectHideFlags: 0
@@ -860,7 +860,7 @@ Transform:
   m_GameObject: {fileID: 1494452620}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 20.2, y: 20.2, z: 20.2}
+  m_LocalScale: {x: 19.4, y: 19.4, z: 19.4}
   m_Children:
   - {fileID: 2033636741}
   - {fileID: 1372110932}
@@ -883,13 +883,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Cam: {fileID: 133853410}
-  Corner1: {fileID: 0}
-  Corner2: {fileID: 0}
-  Corner3: {fileID: 0}
-  Corner4: {fileID: 0}
-  ObjectToColor: {fileID: 0}
-  ImageTargetWidth: 1122
-  ImageTargetHeight: 601
+  ObjectToColor: {fileID: 2033636737}
+  ImageTargetWidth: 1024
+  ImageTargetHeight: 1024
   Fx: 650
   Fy: 650
   Cx: 320
@@ -1070,7 +1066,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2033636737}
   m_LocalRotation: {x: -0.5, y: -0.5, z: -0.5, w: 0.5}
-  m_LocalPosition: {x: 0, y: 0.2, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 12, y: 12, z: 12}
   m_Children: []
   m_Father: {fileID: 1494452627}

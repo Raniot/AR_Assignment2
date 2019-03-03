@@ -13,19 +13,8 @@ public class BlackBorder : MonoBehaviour
     public Camera Cam;
     public GameObject ObjectToColor;
 
-    public int ImageTargetWidth = 1122;
-    public int ImageTargetHeight = 601;
-
-    //Default values: guessed, not calibrated
-    public float Fx = 650;
-    public float Fy = 650;
-    public float Cx = 320;
-    public float Cy = 240;
-
-    //public float Fx = 842.34573f;
-    //public float Fy = 842.03391f;
-    //public float Cx = 310.45239f;
-    //public float Cy = 243.37875f;
+    public int ImageTargetWidth = 1024;
+    public int ImageTargetHeight = 1024;
 
     private MatOfPoint2f _imagePoints;
     private Mat _camImageMat;

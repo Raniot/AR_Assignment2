@@ -123,7 +123,7 @@ public class BlackBorder : MonoBehaviour
 
             if (Vector3.Cross(corner1, corner2).z > 0) return; //Checks for outer bounds objects
             if (Vector3.Distance(corner1, corner2) < 200) return;
-            if (Vector3.Distance(corner2, corner3) < 200) return;
+            //if (Vector3.Distance(corner2, corner3) < 50) return;
 
             candidateCorners.Add(x);
             DrawContour(x);
@@ -152,7 +152,7 @@ public class BlackBorder : MonoBehaviour
         var blackWhiteMat = new Mat();
         Imgproc.cvtColor(_camImageMat, blackWhiteMat, Imgproc.COLOR_BGR2GRAY);
 
-        Imgproc.threshold(blackWhiteMat, blackWhiteMat, 50, 255, Imgproc.THRESH_BINARY);
+        Imgproc.threshold(blackWhiteMat, blackWhiteMat, 100, 255, Imgproc.THRESH_BINARY);
         return blackWhiteMat;
     }
 

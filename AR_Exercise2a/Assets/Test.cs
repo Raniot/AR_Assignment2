@@ -5,6 +5,8 @@ using OpenCVForUnity.CoreModule;
 using OpenCVForUnity.ImgprocModule;
 using UnityEngine;
 using Vuforia;
+using Random = UnityEngine.Random;
+
 
 public class Test : MonoBehaviour
 {
@@ -19,6 +21,9 @@ public class Test : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
+        var rand = Random.value;
+        Shader.SetGlobalVector("_randValue", new Vector2(rand,rand));
 
         MatDisplay.SetCameraFoV(41.5f);
 

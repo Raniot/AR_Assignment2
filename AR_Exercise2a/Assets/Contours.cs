@@ -21,6 +21,9 @@ public class Contours : MonoBehaviour
     void Update()
     {
 
+        var rand = Random.value;
+        Shader.SetGlobalVector("_randValue", new Vector2(rand, rand));
+
         MatDisplay.SetCameraFoV(41.5f);
 
         Image cameraImage = CameraDevice.Instance.GetCameraImage(Image.PIXEL_FORMAT.RGBA8888);

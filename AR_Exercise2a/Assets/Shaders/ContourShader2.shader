@@ -26,7 +26,7 @@
 
 				struct v2f {
 					float4  pos : SV_POSITION;
-					float2  uv : TEXCOORD0;
+					float4  normDeviceCoords : TEXCOORD0;
 					half3 normal : NORMAL;
 				};
 
@@ -36,14 +36,14 @@
 				{
 					v2f o;
 					o.pos = UnityObjectToClipPos(v.vertex);
-					o.uv = TRANSFORM_TEX(v.texcoord, _MainTex);
+					o.normDeviceCoords = UnityObjectToClipPos(v.vertex);
 					o.normal = UnityObjectToWorldNormal(v.normal);
 					return o;
 				}
 
 				half4 frag(v2f i) : COLOR
 				{
-					half2 uv = i.uv;
+					float2 uv = float2(i.normDeviceCoords.x,i.normDeviceCoords.y) / i.normDeviceCoords.w;
 					// Noise
 					half4 noisecol = tex2D(_NoiseTex, (uv + 10 * _randValue.x));
 

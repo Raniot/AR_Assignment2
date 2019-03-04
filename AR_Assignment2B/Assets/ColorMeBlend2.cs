@@ -7,7 +7,7 @@ using OpenCVForUnity.UtilsModule;
 using UnityEngine;
 using Vuforia;
 
-public class ColorMe : MonoBehaviour
+public class ColorMeBlend2 : MonoBehaviour
 {
 
     public Camera Cam;
@@ -110,8 +110,10 @@ public class ColorMe : MonoBehaviour
         Imgproc.line(_camImageMat, imgPnt3, imgPnt4, lineCl);
         Imgproc.line(_camImageMat, imgPnt4, imgPnt1, lineCl);
 
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKey(KeyCode.Space))
         {
+            var texMat = MatDisplay.LoadRGBATexture(@"Models\flying_skull_tex.png");
+
             var srcPoints = new List<Point> { imgPnt2, imgPnt1, imgPnt4, imgPnt3 };
             var dstPoints = new List<Point>
             {
@@ -120,93 +122,30 @@ public class ColorMe : MonoBehaviour
                 new Point(ImageTargetWidth, 0),
                 new Point(0, 0),
             };
-            var H2 = CalcHomography(srcPoints, dstPoints);
 
             var matObj = new MatOfPoint2f(srcPoints.ToArray());
             var matDst = new MatOfPoint2f(dstPoints.ToArray());
             var H = Calib3d.findHomography(matObj, matDst);
-            Debug.Log("MatH2: " + H.dump());
 
-            var warpedMat = new Mat(new Size(ImageTargetWidth, ImageTargetHeight), _camImageMat.type());
+            var warpedMat = new Mat();
 
-            Imgproc.warpPerspective(_camImageMat, warpedMat, H2, new Size(ImageTargetWidth, ImageTargetHeight),
+            Imgproc.warpPerspective(texMat, warpedMat, H.inv(), _camImageMat.size(),
                 Imgproc.INTER_LINEAR);
-            warpedMat.convertTo(warpedMat, CvType.CV_8UC3);
+            warpedMat.convertTo(warpedMat, _camImageMat.type());
 
-            var newTexture = new Texture2D(ImageTargetWidth, ImageTargetHeight, mipChain: false, textureFormat: TextureFormat.RGBA32);
-            MatDisplay.MatToTexture(warpedMat, ref newTexture);
+            var blendTex = new Mat();
 
-            ObjectToColor.GetComponent<MeshRenderer>().material.mainTexture = newTexture;
+            Core.addWeighted(_camImageMat, 0.95f, warpedMat, 0.4f, 0.0, blendTex);
+
+            MatDisplay.DisplayMat(blendTex, MatDisplaySettings.FULL_BACKGROUND);
         }
-
-        //Display the Mat that includes video feed and debug points
-        MatDisplay.DisplayMat(_camImageMat, MatDisplaySettings.FULL_BACKGROUND);
+        else
+        {
+            //Display the Mat that includes video feed and debug points
+            MatDisplay.DisplayMat(_camImageMat, MatDisplaySettings.FULL_BACKGROUND);
+        }
 
         //---- MATCH INTRINSICS OF REAL CAMERA AND PROJECTION MATRIX OF VIRTUAL CAMERA ----
         Cam.projectionMatrix = Projection.PerspectiveOffCenter(Cam.nearClipPlane, Cam.farClipPlane);
-    }
-
-    private static Mat CalcHomography(List<Point> srcPoints, List<Point> dstPoints)
-    {
-        var xy1 = srcPoints[0];
-        var xy2 = srcPoints[1];
-        var xy3 = srcPoints[2];
-        var xy4 = srcPoints[3];
-
-        var uvs = Uv.GetUvs(dstPoints);
-        
-
-        var matA = new Mat(8, 8, CvType.CV_64FC1);
-        matA.put(0, 0,
-            xy1.x, xy1.y, 1, 0, 0, 0, -uvs[0].U*xy1.x, -uvs[0].U*xy1.y,
-            0, 0, 0, xy1.x, xy1.y, 1, -uvs[0].V*xy1.x, -uvs[0].V*xy1.y,
-
-            xy2.x, xy2.y, 1, 0, 0, 0, -uvs[1].U * xy2.x, -uvs[1].U * xy2.y,
-            0, 0, 0, xy2.x, xy2.y, 1, -uvs[1].V * xy2.x, -uvs[1].V * xy2.y,
-
-            xy3.x, xy3.y, 1, 0, 0, 0, -uvs[2].U * xy3.x, -uvs[2].U * xy3.y,
-            0, 0, 0, xy3.x, xy3.y, 1, -uvs[2].V * xy3.x, -uvs[2].V * xy3.y,
-
-            xy4.x, xy4.y, 1, 0, 0, 0, -uvs[3].U * xy4.x, -uvs[3].U * xy4.y,
-            0, 0, 0, xy4.x, xy4.y, 1, -uvs[3].V * xy4.x, -uvs[3].V * xy4.y);
-        Debug.Log("MatA: " + matA.dump());
-
-        var b = new Mat(8,1, CvType.CV_64FC1);
-        b.put(0, 0,
-            uvs[0].U, uvs[0].V, uvs[1].U, uvs[1].V, uvs[2].U, uvs[2].V,
-            uvs[3].U, uvs[3].V);
-
-        Debug.Log("MatB: " + b.dump());
-
-        var H = new Mat(3, 3, CvType.CV_64FC1);
-        Core.solve(matA, b, H);
-
-        var H00 = H.get(0,0).First();
-        var H01 = H.get(1, 0).First();
-        var H02 = H.get(2, 0).First();
-        var H10 = H.get(3, 0).First();
-        var H11 = H.get(4, 0).First();
-        var H12 = H.get(5, 0).First();
-        var H20 = H.get(6, 0).First();
-        var H21 = H.get(7, 0).First();
-        var H22 = 1;
-
-        var returnval = new Mat(3, 3, CvType.CV_64FC1);
-        returnval.put(0, 0, H00, H01, H02, H10, H11, H12, H20, H21, H22);
-        Debug.Log("MatH: " + returnval.dump());
-        return returnval;
-    }
-}
-
-public class Uv
-{
-    public double U { get; set; }
-    public double V { get; set; }
-
-    public static List<Uv> GetUvs(List<Point> points)
-    {
-        var list = new List<Uv>();
-        points.ForEach(point => list.Add(new Uv() {U = point.x, V = point.y}));
-        return list;
     }
 }
